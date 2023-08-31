@@ -1,0 +1,74 @@
+{
+	"compiler": {
+		"version": "0.8.18+commit.87f61d96"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "sender",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount0",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount1",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bytes",
+						"name": "data",
+						"type": "bytes"
+					}
+				],
+				"name": "FSwapCall",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/interfaces/IFSwapCallee.sol": "IFSwapCallee"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/interfaces/IFSwapCallee.sol": {
+			"keccak256": "0x5e3831d122196e63cb5a419faa931dd5950368e1144e3cc5960e2767e47a0769",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://8bb5e9b193dc74049023fc6fffa1e716ea87fd6467007565dad5f3d3ec1355ae",
+				"dweb:/ipfs/QmYUgFcjjiAMXoMnwJJ4ZB2feYChu3tGzZ5prQJ67xrnLY"
+			]
+		}
+	},
+	"version": 1
+}

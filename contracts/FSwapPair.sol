@@ -1,14 +1,15 @@
-pragma solidity =0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.5.16;
 
 import './interfaces/IFSwapPair.sol';
-import './FSwapERC20.sol';
+import './FOTOM.sol';
 import './libraries/Math.sol';
 import './libraries/UQ112x112.sol';
 import './interfaces/IERC20.sol';
 import './interfaces/IFSwapFactory.sol';
 import './interfaces/IFSwapCallee.sol';
 
-contract FSwapPair is IFSwapPair, FSwapERC20 {
+contract FSwapPair is IFSwapPair, FOTOM {
     using SafeMath  for uint;
     using UQ112x112 for uint224;
 

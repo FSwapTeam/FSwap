@@ -1,0 +1,54 @@
+{
+	"compiler": {
+		"version": "0.6.6+commit.6c089d02"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"methods": {}
+		},
+		"userdoc": {
+			"methods": {}
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/libraries/FSwapLibrary.sol": "UniswapV2Library"
+		},
+		"evmVersion": "istanbul",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/interfaces/IFSwapPair.sol": {
+			"keccak256": "0xb7cc234ee6cdcd8b587a97e5eb1d145c13e90667b9a666a0278b6407504beef4",
+			"urls": [
+				"bzz-raw://e96c2581121fa916570abad55b3909a65c911da29d2676a7855ca3fdefd37f11",
+				"dweb:/ipfs/QmaHfK3tNGx2bpCyqEogojATdHvby2yzYWHsFtHQpQx1Bo"
+			]
+		},
+		"contracts/libraries/FSwapLibrary.sol": {
+			"keccak256": "0x3ad900658f91ffc0e4e0e4ef05d8f1fd250bfa9fc549dce2f023489bb61df695",
+			"urls": [
+				"bzz-raw://9de6861d7000c2c82850ca772970681a478bd3aa0b3efb08095733c7424b69d3",
+				"dweb:/ipfs/QmXmLr1k4ysCo4Bg6VB1BvRt8NkjLpdQjs6pSfA6PypRNr"
+			]
+		},
+		"contracts/libraries/SafeMath.sol": {
+			"keccak256": "0x19ed2bac2273975c1734c0858c1c8db08ccc11bb71b5c147128a2a143c23445c",
+			"urls": [
+				"bzz-raw://bf2e9b53b6d095c83b38960536d45edf1f95a1ecea184c5a9669ab892023e80f",
+				"dweb:/ipfs/QmVEv6Z6t11cGk2WqP8VVr6GJrazP82UsC34KkoWAgCBHs"
+			]
+		}
+	},
+	"version": 1
+}

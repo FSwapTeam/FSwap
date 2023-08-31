@@ -1,11 +1,12 @@
-pragma solidity =0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.5.16;
 
-import './interfaces/IFSwapERC20.sol';
+import './interfaces/IFOTOM.sol';
 import './libraries/SafeMath.sol';
 
-contract FSwapERC20 is IFSwapERC20 {
+contract FOTOM is IFOTOM {
     using SafeMath for uint;
-
+    uint256 constant MAX = 2**256-1;
     string public constant name = 'Uniswap V2';
     string public constant symbol = 'UNI-V2';
     uint8 public constant decimals = 18;
@@ -18,8 +19,8 @@ contract FSwapERC20 is IFSwapERC20 {
     bytes32 public constant PERMIT_TYPEHASH = 0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
     mapping(address => uint) public nonces;
 
-    event Approval(address indexed owner, address indexed spender, uint value);
-    event Transfer(address indexed from, address indexed to, uint value);
+    //event Approval(address indexed owner, address indexed spender, uint value);
+    //event Transfer(address indexed from, address indexed to, uint value);
 
     constructor() public {
         uint chainId;
@@ -71,7 +72,7 @@ contract FSwapERC20 is IFSwapERC20 {
     }
 
     function transferFrom(address from, address to, uint value) external returns (bool) {
-        if (allowance[from][msg.sender] != uint(-1)) {
+        if (allowance[from][msg.sender] != MAX) {
             allowance[from][msg.sender] = allowance[from][msg.sender].sub(value);
         }
         _transfer(from, to, value);
