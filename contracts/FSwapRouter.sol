@@ -8,35 +8,50 @@ import './libraries/FSwapLibrary.sol';
 import './libraries/SafeMath.sol';
 import './interfaces/IERC20.sol';
 import './interfaces/IWETH.sol';
-
-contract FSwapRouter is IFSwapRouter {
+import './utils/Ownable.sol';
+import './interfaces/IPriceOracle.sol';
+import './interfaces/IFTMReward.sol';
+contract FSwapRouter is IFSwapRouter,Ownable {
     using SafeMath for uint;
+    address public rewardToken;
+    address public oracle;
     address public immutable override factory;
     address public immutable override WETH;
+
+    struct LiquidityData {
+        uint supplyTime;
+        uint amount;
+        address pair;
+    }
+    mapping (address => LiquidityData[]) userLiquidity;
     modifier ensure(uint deadline) {
         require(deadline >= block.timestamp, 'FSwapRouter: EXPIRED');
         _;
     }
-    constructor(address _factory, address _WETH) public {
+    constructor(address _factory, address _WETH,address _rewardToken, address _oracle) public {
         factory = _factory;
         WETH = _WETH;
+        rewardToken = _rewardToken;
+        oracle = _oracle;
     }
+
     receive() external payable {
         assert(msg.sender == WETH); // only accept ETH via fallback from the WETH contract
     }
+    function setRewardToken(address _rewardToken) public  onlyOwner {
+        rewardToken = _rewardToken;
+    }
+    function setOracle(address _oracle)public onlyOwner{
+        oracle  = _oracle;
+    }
     // **** ADD LIQUIDITY ****
     function _addLiquidity(
-        address tokenA,
-        address tokenB,
-        uint amountADesired,
-        uint amountBDesired,
-        uint amountAMin,
-        uint amountBMin
-    ) internal virtual returns (uint amountA, uint amountB) {
-        // create the pair if it doesn't exist yet
-        if (IFSwapFactory(factory).getPair(tokenA, tokenB) == address(0)) {
-            IFSwapFactory(factory).createPair(tokenA, tokenB);
-        }
+        address tokenA, address tokenB,
+        uint amountADesired, uint amountBDesired,
+        uint amountAMin, uint amountBMin
+    ) internal view virtual returns (uint amountA, uint amountB) {
+        require (IFSwapFactory(factory).getPair(tokenA, tokenB) != address(0), 'FSwapRouter: No pair exist');
+        
         (uint reserveA, uint reserveB) = FSwapLibrary.getReserves(factory, tokenA, tokenB);
         if (reserveA == 0 && reserveB == 0) {
             (amountA, amountB) = (amountADesired, amountBDesired);
@@ -68,6 +83,9 @@ contract FSwapRouter is IFSwapRouter {
         TransferHelper.safeTransferFrom(tokenA, msg.sender, pair, amountA);
         TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
         liquidity = IFSwapPair(pair).mint(to);
+
+        LiquidityData memory liqData= LiquidityData(block.timestamp,liquidity,pair);
+        userLiquidity[msg.sender].push(liqData);
     }
     function addLiquidityETH(
         address token,
@@ -92,8 +110,11 @@ contract FSwapRouter is IFSwapRouter {
         liquidity = IFSwapPair(pair).mint(to);
         // refund dust eth, if any
         if (msg.value > amountETH) TransferHelper.safeTransferETH(msg.sender, msg.value - amountETH);
-    }
 
+        LiquidityData memory liqData= LiquidityData(block.timestamp,liquidity,pair);
+        userLiquidity[msg.sender].push(liqData);
+    }
+    
     // **** REMOVE LIQUIDITY ****
     function removeLiquidity(
         address tokenA,
@@ -104,13 +125,41 @@ contract FSwapRouter is IFSwapRouter {
         address to,
         uint deadline
     ) public virtual override ensure(deadline) returns (uint amountA, uint amountB) {
+        address _tokenA=tokenA;
+        address _tokenB=tokenB;
+
         address pair = FSwapLibrary.pairFor(factory, tokenA, tokenB);
         IFSwapPair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
         (uint amount0, uint amount1) = IFSwapPair(pair).burn(to);
-        (address token0,) = FSwapLibrary.sortTokens(tokenA, tokenB);
-        (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
+        (address token0,) = FSwapLibrary.sortTokens(_tokenA, _tokenB);
+        (amountA, amountB) = _tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
         require(amountA >= amountAMin, 'FSwapRouter: INSUFFICIENT_A_AMOUNT');
-        require(amountB >= amountBMin, 'FSwapRouter: INSUFFICIENT_B_AMOUNT');
+        require(amountB >= amountBMin, 'FSwapRouter: INSUFFICIENT_B_AMOUNT');     
+        uint _amountA = amountA;
+        uint _amountB = amountB;
+        uint256 rewardAmount = 0;
+        for (uint256 i = 0; i < userLiquidity[msg.sender].length; i++) {
+            LiquidityData memory data = userLiquidity[msg.sender][i];
+            // Perform operations on data variables
+            rewardAmount = rewardAmount.add(data.amount.mul(block.timestamp-data.supplyTime));
+        }
+        
+        uint priceA  = IPriceOracle(oracle).getPrice(_tokenA);
+        uint priceB = IPriceOracle(oracle).getPrice(_tokenB);
+        require(priceA.add(priceB) != 0, 'FSwaprouter: Strange token pair');
+        uint mintAmount;
+        if(priceA.mul(priceB) != 0)
+            mintAmount = priceA.mul(_amountA).add(priceB.mul(_amountB))/2;
+        else if(priceA != 0)
+            mintAmount = priceA.mul(_amountA);
+        else if(priceB != 0)
+            mintAmount = priceB.mul(_amountB);
+        
+        IFTMReward(rewardToken).mint(msg.sender,mintAmount);
+
+        delete userLiquidity[msg.sender];
+        LiquidityData memory newData = LiquidityData(block.timestamp,IFSwapPair(pair).balanceOf(msg.sender),pair);
+        userLiquidity[msg.sender].push(newData);
     }
     function removeLiquidityETH(
         address token,

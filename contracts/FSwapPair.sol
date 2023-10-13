@@ -9,18 +9,18 @@ import './interfaces/IERC20.sol';
 import './interfaces/IFSwapFactory.sol';
 import './interfaces/IFSwapCallee.sol';
 
-contract FSwapPair is IFSwapPair, FOTOM {
+contract FSwapPair is IFSwapPair, FOTOMPair {
     using SafeMath  for uint;
     using UQ112x112 for uint224;
-
-    uint public constant MINIMUM_LIQUIDITY = 10**3;
+    uint public constant FEE = 0;
+    uint public constant  MINIMUM_LIQUIDITY = 10**3;
     bytes4 private constant SELECTOR = bytes4(keccak256(bytes('transfer(address,uint256)')));
 
-    address public factory;
-    address public token0;
-    address public token1;
+    address public  factory;
+    address public  token0;
+    address public  token1;
 
-    uint112 private reserve0;           // uses single storage slot, accessible via getReserves
+    uint112 private  reserve0;           // uses single storage slot, accessible via getReserves
     uint112 private reserve1;           // uses single storage slot, accessible via getReserves
     uint32  private blockTimestampLast; // uses single storage slot, accessible via getReserves
 
@@ -36,7 +36,7 @@ contract FSwapPair is IFSwapPair, FOTOM {
         unlocked = 1;
     }
 
-    function getReserves() public view returns (uint112 _reserve0, uint112 _reserve1, uint32 _blockTimestampLast) {
+    function getReserves() public  view returns (uint112 _reserve0, uint112 _reserve1, uint32 _blockTimestampLast) {
         _reserve0 = reserve0;
         _reserve1 = reserve1;
         _blockTimestampLast = blockTimestampLast;
@@ -178,8 +178,8 @@ contract FSwapPair is IFSwapPair, FOTOM {
         uint amount1In = balance1 > _reserve1 - amount1Out ? balance1 - (_reserve1 - amount1Out) : 0;
         require(amount0In > 0 || amount1In > 0, 'FSwap: INSUFFICIENT_INPUT_AMOUNT');
         { // scope for reserve{0,1}Adjusted, avoids stack too deep errors
-        uint balance0Adjusted = balance0.mul(1000).sub(amount0In.mul(3));
-        uint balance1Adjusted = balance1.mul(1000).sub(amount1In.mul(3));
+        uint balance0Adjusted = balance0.mul(1000).sub(amount0In.mul(FEE));
+        uint balance1Adjusted = balance1.mul(1000).sub(amount1In.mul(FEE));
         require(balance0Adjusted.mul(balance1Adjusted) >= uint(_reserve0).mul(_reserve1).mul(1000**2), 'FSwap: K');
         }
 

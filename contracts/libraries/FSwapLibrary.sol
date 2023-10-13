@@ -1,12 +1,12 @@
 pragma solidity >=0.5.0;
 
 import '../interfaces/IFSwapPair.sol';
-
+import '../interfaces/IFSwapFactory.sol';
 import "./SafeMath.sol";
 
 library FSwapLibrary {
     using SafeMath for uint;
-
+    uint256 constant FEE = 0;
     // returns sorted token addresses, used to handle return values from pairs sorted in this order
     function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
         require(tokenA != tokenB, 'FSwapLibrary: IDENTICAL_ADDRESSES');
@@ -15,14 +15,9 @@ library FSwapLibrary {
     }
 
     // calculates the CREATE2 address for a pair without making any external calls
-    function pairFor(address factory, address tokenA, address tokenB) internal pure returns (address pair) {
-        (address token0, address token1) = sortTokens(tokenA, tokenB);
-        pair = address(uint(keccak256(abi.encodePacked(
-                hex'ff',
-                factory,
-                keccak256(abi.encodePacked(token0, token1)),
-                hex'96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f' // init code hash
-            ))));
+    function pairFor(address factory, address tokenA, address tokenB) internal  view returns (address pair) {
+        //(address token0, address token1) = sortTokens(tokenA, tokenB);
+        pair = IFSwapFactory(factory).getPair(tokenA, tokenB);
     }
 
     // fetches and sorts the reserves for a pair
@@ -43,7 +38,7 @@ library FSwapLibrary {
     function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
         require(amountIn > 0, 'FSwapLibrary: INSUFFICIENT_INPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'FSwapLibrary: INSUFFICIENT_LIQUIDITY');
-        uint amountInWithFee = amountIn.mul(997);
+        uint amountInWithFee = amountIn.mul(1000-FEE);
         uint numerator = amountInWithFee.mul(reserveOut);
         uint denominator = reserveIn.mul(1000).add(amountInWithFee);
         amountOut = numerator / denominator;
@@ -54,7 +49,7 @@ library FSwapLibrary {
         require(amountOut > 0, 'FSwapLibrary: INSUFFICIENT_OUTPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'FSwapLibrary: INSUFFICIENT_LIQUIDITY');
         uint numerator = reserveIn.mul(amountOut).mul(1000);
-        uint denominator = reserveOut.sub(amountOut).mul(997);
+        uint denominator = reserveOut.sub(amountOut).mul(100-FEE);
         amountIn = (numerator / denominator).add(1);
     }
 
